@@ -1,0 +1,174 @@
+body {
+  color: #222;
+  font-size: 16px;
+  text-align: center;
+  font-family: sans-serif;
+  background-color: #f7f7f7;
+}
+
+main {
+  width: 900px;
+  margin: 0 auto;
+}
+
+main img {
+  position : relative;
+  top: 20px;
+  left: -9px;
+}
+
+code, p.code {
+  background-color: #fcfcfc;
+  padding: 2px;
+  border-radius: 6px;
+  max-width: 900px;
+  font-family: monospace;
+}
+
+#url {
+  min-width: 300px;
+  height: 30px;
+  padding-left: 10px;
+}
+
+#APIType,
+#testTarget {
+  height: 40px;
+}
+
+#runTests {
+  height: 40px;
+  background: beige;
+}
+
+#testAPIs {
+  margin: 0 auto;
+  width: 900px;
+}
+
+#testAPIs h4 {
+  margin: 15px;
+}
+
+#testAPIs > ul{
+  width: 700px;
+  margin: 0 auto;
+  padding-left: 0;
+}
+
+#testAPIs ul > li {
+  color: #0000EE;
+  font-family: monospace;
+  padding: 6px;
+  list-style: none;
+}
+
+#testAPIs ul > li.next-test::before{
+  content: '* ';
+  color: #D70;
+}
+
+#testAPIs ul > li.waiting {
+  color: orange;
+}
+
+#testAPIs ul > li.pass{
+  color: green;
+}
+
+#testAPIs ul > li.fail{
+  color: red;
+}
+#testAPIs ul > li.current{
+  font-weight: bold;
+  text-decoration: underline;
+}
+#testAPIs ul>li:hover {
+  cursor: pointer;
+  background: #dfdfda;
+  text-decoration: underline;
+}
+
+#testResults {
+  display: flex;
+  align-items: flex-start;
+  flex-flow: column wrap;
+  line-height: 24px;
+  background: beige;
+  margin: 25px auto 0;
+  padding: 10px 35px 30px;
+  width: 700px;
+}
+
+.test {
+  text-align: left;
+}
+
+.test > p {
+  margin: 5px 0;
+}
+.test > h3 {
+  margin: 25px 0 5px;
+}
+
+.passed > h3 {
+  color: green;
+}
+
+.passed > h3::before {
+  content: '\2713 \a0';
+}
+
+.failed > h3 {
+  color: red;
+}
+
+.failed > h3::before {
+  content: '\2717 \a0';
+}
+
+.hidden {
+  display: none !important;
+}
+
+.spinner,
+.spinner:after {
+  content: '';
+  width: 60px;
+  height: 60px;
+  position: relative;
+  border-radius: 50%;
+  display: inline-block;
+  background: #eee;
+  margin: 50px;
+}
+
+.spinner:after {
+  background: none;
+  display: block;
+  margin: 0;
+}
+
+#loadingSpinner:after {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  border: 3px solid transparent;
+  border-top-color: orangered;
+  border-bottom-color: orangered;
+  animation: spinny 1s linear infinite;
+}
+
+@keyframes spinny {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) scale(1.3);
+  }
+
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
