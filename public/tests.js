@@ -166,15 +166,18 @@ var APITests = [
   
   {
     // MS6 - Exercise Tracker
-    //doesnt pass often, this is an issue with the project! It often returns thats its a duplicate user when it isnt.
+    //test 1 doesnt pass sometimes, this is an issue with the project! It often returns thats its a duplicate user when it isnt.
     "I can create a user by <b>posting</b> form data <code>username</code> to /api/exercise/new-user": "{ getUserInput => $.post(getUserInput('url') + '/api/exercise/new-user',{username: (Math.floor(Math.random()*1000000)).toString()+'a'} ).then(data => { console.log(data); }, xhr => {throw new Error(xhr.statusText); }) }",
-    "I can get an array of all users by <b>getting</b> api/exercise/users" : "getUserInput => $.get(getUserInput('url')+ '/api/exercise/users').then(data => { assert.isArray(data, 'users should return in an array'); }, xhr => { throw new Error(xhr.statusText); }).promise()",
+    "I can get an array of all users by <b>getting</b> api/exercise/users" : "getUserInput => $.get(getUserInput('url')+ '/api/exercise/users').then(data => { assert.isArray(data, 'users should return in an array'); }, xhr => { throw new Error(xhr.statusText); })",
+    //those can stay inline while in dev, theyre simple
+    
     "I can see a <code>username</code> & <code>_id</code> for each user in the users array" : `
       getUserInput => $.get(getUserInput('url')+ '/api/exercise/users').then(data => { 
         assert.property(data[0], 'username'); 
         assert.property(data[0], '_id');
         ms6testUser = data[0]._id 
       }, xhr => { throw new Error(xhr.statusText); }) `,
+      
     "I can add an exercise to any user by <b>posting</b> form data <code>userId</code>, <code>description</code>, <code>duration</code>, & optionally <code>date</code> to /api/exercise/add. If no date supplied it will use current date.": `
       { getUserInput => $.post(getUserInput('url') + '/api/exercise/add',
       {userId: ms6testUser, description: 'crazyrunning', duration: '79'} )
@@ -184,6 +187,7 @@ var APITests = [
         assert.match(data.date, /20[0-9]{2}/ , 'date incorrect, no year present');
       }, xhr => {throw new Error(xhr.statusText); }) }
     `,
+    
     "I can retrieve a full exercise log of any user by <b>getting</b> /api/exercise/log with a parameter of <code>userId</code>": `
       { getUserInput => $.get(getUserInput('url') + '/api/exercise/log',
       {userId: ms6testUser} )
@@ -195,6 +199,7 @@ var APITests = [
         console.log(data);
       }, xhr => {throw new Error(xhr.statusText); }) }   
     `,
+    
     "I can retrieve part of the log of any user by also passing along optional parameters of <code>from</code> & <code>to</code> or <code>limit</code>. (Date format yyyy-mm-dd, limit = int)": `
       { getUserInput => $.get(getUserInput('url') + '/api/exercise/log',
       {userId: ms6testUser, limit: 2} )
@@ -223,10 +228,14 @@ var APITests = [
   */
   
   {
-    //BOILERPLATE 50% complete, project 75% complete
-    //TODO: impli mocha boiler/in project/tests
     //
-    //ISQA_1 - Personal Library
+    //--------[ISQA_1 - Personal Library]---------
+    //
+    //note:   potentially last project as it's fairly complex and encompassing, unless we create a token request api
+    //        window.ISQA_1_testBookId created so we can store variable across tests using global scope. (Needed to reliably predict api return)
+    //
+    //todo:   impli mocha/tests on project
+    //        test for those tests in this test testing enviroment
     "I can <b>post</b> a <code>title</code> to /api/books to add a book and returned will be the object with the <code>title</code> and a unique <code>_id</code>": `{
       var testTitle = 'InfoSec for Smarties';
       getUserInput => $.post(getUserInput('url') + '/api/books',
@@ -237,7 +246,6 @@ var APITests = [
         assert.property(data, '_id', 'returned object should contain _id');
       }, xhr => {throw new Error(xhr.statusText); })
     }`,
-    //window.ISQA_1_testBookId created so we can store variable across tests using global scope. (Needed to reliably predict api return)
     "I can <b>get</b> /api/books to retrieve an aray of all books containing <code>title</code>, <code>_id</code>, & <code>commentcount</code>": `{
       getUserInput => $.get(getUserInput('url')+ '/api/books')
       .then(data => { 
@@ -250,19 +258,42 @@ var APITests = [
     }`,
     "I can <b>get</b> /api/books/{_id} to retrieve a single object of a book containing <code>title</code>, <code>_id</code>, & an array of <code>comments</code> (empty array if no comments present)": `{
       getUserInput => $.get(getUserInput('url')+ '/api/books/'+window.ISQA_1_testBookId)
-      .then(data => { 
-        console.log(data);
+      .then(data => {
+        assert.property(data, 'comments', 'Book should contain property comments');
+        assert.isArray(data.comments, 'Book should contain array of comments');
+        assert.property(data, 'title', 'Book should contain property title');
+        assert.property(data, '_id', 'Book should contain property _id');
+        assert.equal(data._id, window.ISQA_1_testBookId, 'Returned object should contain the correct book we requested');
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
+    "I can <b>post</b> a <code>comment</code> to /api/books/{_id} to add a comment to a book and returned will be the books object similar to <b>get</b> /api/books/{_id}": `{
+      var testComment = 'Quality Assurance is Key';
+      getUserInput => $.post(getUserInput('url') + '/api/books/'+window.ISQA_1_testBookId,
+      {comment: testComment} )
+      .then(data => { 
+        assert.property(data, 'comments', 'Book should contain property comments');
+        assert.isArray(data.comments, 'Book should contain array of comments');
+        assert.include(data.comments, testComment, 'Book should contain the comment posted')
+        assert.property(data, 'title', 'Book should contain property title');
+        assert.property(data, '_id', 'Book should contain property _id');
+        assert.equal(data._id, window.ISQA_1_testBookId, 'Returned object should contain the correct book we commented on');
+      }, xhr => {throw new Error(xhr.statusText); })
+    }`,    
     
-    
-    
-    
-    
-    //LETS NOT ACCIDENTLY DELETE THE DATABASE UNTIL WE NEED TO.
-    /*
+    "I can <b>delete</b> /api/books/{_id} to delete a book from the collection. Returned will be 'delete successful' if successful.": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/books/'+window.ISQA_1_testBookId, type: 'DELETE'})
+      .then(data => { 
+        assert.equal(data, 'delete successful', 'Successfully deleted process should return correct string');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "If I try to request a book that doesn't exist I will get a 'no book exists' message": `{
+      getUserInput => $.get(getUserInput('url')+ '/api/books/'+window.ISQA_1_testBookId)
+      .then(data => { 
+        assert.equal(data, 'no book exists', 'Returned message should say "no book exists"')
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
     "I can send a <b>delete</b> request to /api/books to delete all books in the database. Returned will be 'complete delete successful' if successful.": `{
-      getUserInput => $.delete(getUserInput('url')+ '/api/books')
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/books', type: 'DELETE'})
       .then(data => { 
         assert.equal(data, 'complete delete successful', 'Successfully deleted process should return correct string');
       }, xhr => { throw new Error(xhr.statusText); })
@@ -270,9 +301,10 @@ var APITests = [
     "Database will be empty after a successful delete process": `{
       getUserInput => $.get(getUserInput('url')+ '/api/books')
       .then(data => { 
-        assert.equal(data,'','Database should be empty after a successful delete process');
+        assert.equal(data,'','Database should be empty after a successful full delete process');
+      }, xhr => { throw new Error(xhr.statusText); })
     }`,
-    */
-    
   }
-  ];
+  
+  
+];
