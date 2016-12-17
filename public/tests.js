@@ -35,10 +35,10 @@ var challengeSection = [
   },{
     name : 'MS5 - file metadata',
     defaultPrj: 'purple-paladin'
-  },*/{
+  },{
     name : 'MS6 - exercise tracker',
     defaultPrj: 'nonstop-pond'
-  },
+  },*/
   {
     name : 'ISQA_1 - Personal Library',
     defaultPrj: 'spark-cathedral'
@@ -164,11 +164,13 @@ var APITests = [
     "upload a BLOB 2": "getUserInput => {var fd = new FormData(); fd.append('upfile', new Blob(['{\"a\":\"1234\"}'], {type:'application/json'}), 'test2.json' ); return $.ajax({url: getUserInput('url') + '/api/fileanalyse', type: 'POST', data: fd, processData: false, contentType: false }).then(data => {console.log(data); assert.equal(data.name, 'test2.json'); assert.equal(data.size, 12);}, xhr => {throw new Error(xhr.responseText); }).promise(); }",
   },*/
   
+  
+  /*
   {
     // MS6 - Exercise Tracker
     //test 1 doesnt pass sometimes, this is an issue with the project! It often returns thats its a duplicate user when it isnt.
-    "I can create a user by <b>posting</b> form data <code>username</code> to /api/exercise/new-user": "{ getUserInput => $.post(getUserInput('url') + '/api/exercise/new-user',{username: (Math.floor(Math.random()*1000000)).toString()+'a'} ).then(data => { console.log(data); }, xhr => {throw new Error(xhr.statusText); }) }",
-    "I can get an array of all users by <b>getting</b> api/exercise/users" : "getUserInput => $.get(getUserInput('url')+ '/api/exercise/users').then(data => { assert.isArray(data, 'users should return in an array'); }, xhr => { throw new Error(xhr.statusText); })",
+    "I can create a user by <b>posting</b> form data <code>username</code> to <i>/api/exercise/new-user</i>": "{ getUserInput => $.post(getUserInput('url') + '/api/exercise/new-user',{username: (Math.floor(Math.random()*1000000)).toString()+'a'} ).then(data => { console.log(data); }, xhr => {throw new Error(xhr.statusText); }) }",
+    "I can get an array of all users by <b>getting</b> <i>api/exercise/users</i>" : "getUserInput => $.get(getUserInput('url')+ '/api/exercise/users').then(data => { assert.isArray(data, 'users should return in an array'); }, xhr => { throw new Error(xhr.statusText); })",
     //those can stay inline while in dev, theyre simple
     
     "I can see a <code>username</code> & <code>_id</code> for each user in the users array" : `
@@ -178,7 +180,7 @@ var APITests = [
         ms6testUser = data[0]._id 
       }, xhr => { throw new Error(xhr.statusText); }) `,
       
-    "I can add an exercise to any user by <b>posting</b> form data <code>userId</code>, <code>description</code>, <code>duration</code>, & optionally <code>date</code> to /api/exercise/add. If no date supplied it will use current date.": `
+    "I can add an exercise to any user by <b>posting</b> form data <code>userId</code>, <code>description</code>, <code>duration</code>, & optionally <code>date</code> to <i>/api/exercise/add</i>. If no date supplied it will use current date.": `
       { getUserInput => $.post(getUserInput('url') + '/api/exercise/add',
       {userId: ms6testUser, description: 'crazyrunning', duration: '79'} )
       .then(data => { 
@@ -188,7 +190,7 @@ var APITests = [
       }, xhr => {throw new Error(xhr.statusText); }) }
     `,
     
-    "I can retrieve a full exercise log of any user by <b>getting</b> /api/exercise/log with a parameter of <code>userId</code>": `
+    "I can retrieve a full exercise log of any user by <b>getting</b> <i>/api/exercise/log</i> with a parameter of <code>userId</code>": `
       { getUserInput => $.get(getUserInput('url') + '/api/exercise/log',
       {userId: ms6testUser} )
       .then(data => { 
@@ -211,7 +213,7 @@ var APITests = [
     `,
   },
   
-  
+  */
   
   
   
@@ -231,12 +233,28 @@ var APITests = [
     //
     //--------[ISQA_1 - Personal Library]---------
     //
+    //info/sample:  https://spark-cathedral.gomix.me/
+    //code:         https://gomix.com/#!/project/spark-cathedral
+    //
     //note:   potentially last project as it's fairly complex and encompassing, unless we create a token request api
     //        window.ISQA_1_testBookId created so we can store variable across tests using global scope. (Needed to reliably predict api return)
     //
     //todo:   impli mocha/tests on project
     //        test for those tests in this test testing enviroment
-    "I can <b>post</b> a <code>title</code> to /api/books to add a book and returned will be the object with the <code>title</code> and a unique <code>_id</code>": `{
+    //assert.equal(data.headers['cache-control'], 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    "I will not have anything cached in my client": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
+      .then(data => {
+        assert.equal(data.headers['cache-control'], 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "I will see that the site is powered by 'PHP 4.2.0' even though it isn't": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
+      .then(data => {
+        assert.equal(data.headers['x-powered-by'], 'PHP 4.2.0');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "I can <b>post</b> a <code>title</code> to <i>/api/books</i> to add a book and returned will be the object with the <code>title</code> and a unique <code>_id</code>": `{
       var testTitle = 'InfoSec for Smarties';
       getUserInput => $.post(getUserInput('url') + '/api/books',
       {title: testTitle} )
@@ -246,7 +264,7 @@ var APITests = [
         assert.property(data, '_id', 'returned object should contain _id');
       }, xhr => {throw new Error(xhr.statusText); })
     }`,
-    "I can <b>get</b> /api/books to retrieve an aray of all books containing <code>title</code>, <code>_id</code>, & <code>commentcount</code>": `{
+    "I can <b>get</b> <i>/api/books</i> to retrieve an aray of all books containing <code>title</code>, <code>_id</code>, & <code>commentcount</code>": `{
       getUserInput => $.get(getUserInput('url')+ '/api/books')
       .then(data => { 
         assert.isArray(data, 'Return should be an array');
@@ -256,7 +274,7 @@ var APITests = [
         window.ISQA_1_testBookId = data[0]._id;
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
-    "I can <b>get</b> /api/books/{_id} to retrieve a single object of a book containing <code>title</code>, <code>_id</code>, & an array of <code>comments</code> (empty array if no comments present)": `{
+    "I can <b>get</b> </i>/api/books/{_id}</i> to retrieve a single object of a book containing <code>title</code>, <code>_id</code>, & an array of <code>comments</code> (empty array if no comments present)": `{
       getUserInput => $.get(getUserInput('url')+ '/api/books/'+window.ISQA_1_testBookId)
       .then(data => {
         assert.property(data, 'comments', 'Book should contain property comments');
@@ -266,7 +284,7 @@ var APITests = [
         assert.equal(data._id, window.ISQA_1_testBookId, 'Returned object should contain the correct book we requested');
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
-    "I can <b>post</b> a <code>comment</code> to /api/books/{_id} to add a comment to a book and returned will be the books object similar to <b>get</b> /api/books/{_id}": `{
+    "I can <b>post</b> a <code>comment</code> to <i>/api/books/{_id}</i> to add a comment to a book and returned will be the books object similar to <b>get</b> <i>/api/books/{_id}</i>": `{
       var testComment = 'Quality Assurance is Key';
       getUserInput => $.post(getUserInput('url') + '/api/books/'+window.ISQA_1_testBookId,
       {comment: testComment} )
@@ -279,8 +297,7 @@ var APITests = [
         assert.equal(data._id, window.ISQA_1_testBookId, 'Returned object should contain the correct book we commented on');
       }, xhr => {throw new Error(xhr.statusText); })
     }`,    
-    
-    "I can <b>delete</b> /api/books/{_id} to delete a book from the collection. Returned will be 'delete successful' if successful.": `{
+    "I can <b>delete</b> <i>/api/books/{_id}</i> to delete a book from the collection. Returned will be 'delete successful' if successful": `{
       getUserInput => $.ajax({url: getUserInput('url')+ '/api/books/'+window.ISQA_1_testBookId, type: 'DELETE'})
       .then(data => { 
         assert.equal(data, 'delete successful', 'Successfully deleted process should return correct string');
@@ -292,7 +309,7 @@ var APITests = [
         assert.equal(data, 'no book exists', 'Returned message should say "no book exists"')
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
-    "I can send a <b>delete</b> request to /api/books to delete all books in the database. Returned will be 'complete delete successful' if successful.": `{
+    "I can send a <b>delete</b> request to <i>/api/books</i> to delete all books in the database. Returned will be 'complete delete successful' if successful": `{
       getUserInput => $.ajax({url: getUserInput('url')+ '/api/books', type: 'DELETE'})
       .then(data => { 
         assert.equal(data, 'complete delete successful', 'Successfully deleted process should return correct string');
@@ -304,6 +321,94 @@ var APITests = [
         assert.equal(data,'','Database should be empty after a successful full delete process');
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
+    "Functional test 1 (POST /api/books with title)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=0')
+      .then(data => {
+        var testedFor = [];
+        for (var i=0; i<data.assertions.length; i++) {
+          testedFor.push(data.assertions[i].args[0]);
+        }
+        assert.include(testedFor, 'res.status', 'Should test for response status code');
+        assert.include(testedFor, 'res.body', 'Should test response body for properties required to return');
+        assert.include(testedFor, 'res.body.comments', 'Should test for res.body.comments to be an array');
+        assert.include(testedFor, 'res.body.title', 'Should test res.body.title for correct title posted');
+        assert.equal(data.state, 'passed', 'Functional test should pass');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Functional test 2 (POST /api/books with no title)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=1')
+      .then(data => {
+        var testedFor = [];
+        for (var i=0; i<data.assertions.length; i++) {
+          testedFor.push(data.assertions[i].args[0]);
+        }
+        assert.include(testedFor, 'res.status', 'Should test for response status code');
+        assert.include(testedFor, 'res.text', 'Should test res.text to equal "missing title"');
+        assert.equal(data.state, 'passed', 'Functional test should pass');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Functional test 3 (/api/books => array of books)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=2')
+      .then(data => {
+        var testedFor = [];
+        var propertyTests = 0;
+        for (var i=0; i<data.assertions.length; i++) {
+          testedFor.push(data.assertions[i].args[0]);
+          if(data.assertions[i].method == 'property') propertyTests++;
+        }
+        assert.include(testedFor, 'res.status', 'Should test for response status code');
+        assert.include(testedFor, 'res.body', 'Should test res.body to be an array');
+        assert.isAtLeast(propertyTests, 3, 'Should be testing for atleast 3 properties of response objects')
+        assert.equal(data.state, 'passed', 'Functional test should pass');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Functional test 4 (GET /api/books/[id] with unknown id)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=3')
+      .then(data => {
+        var testedFor = [];
+        for (var i=0; i<data.assertions.length; i++) {
+          testedFor.push(data.assertions[i].args[0]);
+        }
+        assert.include(testedFor, 'res.status', 'Should test for response status code');
+        assert.include(testedFor, 'res.text', 'Should test res.text to equal "no book exists"');
+        assert.equal(data.state, 'passed', 'Functional test should pass');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Functional test 5 (Test GET /api/books/[id] with valid/known id)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=4')
+      .then(data => {
+        var testedFor = [];
+        var propertyTests = 0;
+        for (var i=0; i<data.assertions.length; i++) {
+          testedFor.push(data.assertions[i].args[0]);
+          if(data.assertions[i].method == 'property') propertyTests++;
+        }
+        assert.include(testedFor, 'res.status', 'Should test for response status code');
+        assert.isAtLeast(propertyTests, 3, 'Should be testing for atleast 3 properties of response object')
+        assert.include(testedFor, 'res.body._id', 'Should test res.body._id to equal _id passed to server');
+        assert.include(testedFor, 'res.body.comments', 'Should test for res.body.coments to be an array')
+        assert.equal(data.state, 'passed', 'Functional test should pass');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "Functional test 6 (POST /api/books/[id] with comment)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=5')
+      .then(data => {
+        var testedFor = [];
+        var propertyTests = 0;
+        var includeTests = 0;
+        for (var i=0; i<data.assertions.length; i++) {
+          testedFor.push(data.assertions[i].args[0]);
+          if(data.assertions[i].method == 'property') propertyTests++;
+          if(data.assertions[i].method == 'property') includeTests++;
+        }
+        assert.include(testedFor, 'res.status', 'Should test for response status code');
+        assert.isAtLeast(propertyTests, 3, 'Should be testing for atleast 3 properties of response object')
+        assert.include(testedFor, 'res.body.comments', 'Should test for res.body.comments to be an array')
+        assert.isAtLeast(includeTests, 1, 'Should test comments to include comment sent to server')
+        assert.equal(data.state, 'passed', 'Functional test should pass');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+
   }
   
   

@@ -3,11 +3,11 @@ body {
   font-size: 16px;
   text-align: center;
   font-family: sans-serif;
-  background-color: #f7f7f7;
+  background-color: #eee;
 }
 
 main {
-  width: 900px;
+  width: 1000px;
   margin: 0 auto;
 }
 
@@ -21,7 +21,7 @@ code, p.code {
   background-color: #fcfcfc;
   padding: 2px;
   border-radius: 6px;
-  max-width: 900px;
+  max-width: 1000px;
   font-family: monospace;
 }
 
@@ -43,7 +43,7 @@ code, p.code {
 
 #testAPIs {
   margin: 0 auto;
-  width: 900px;
+  width: 1000px;
 }
 
 #testAPIs h4 {
@@ -51,7 +51,7 @@ code, p.code {
 }
 
 #testAPIs > ul{
-  width: 700px;
+  width: 800px;
   margin: 0 auto;
   padding-left: 0;
 }

@@ -155,6 +155,7 @@ $(document).ready(function() {
 
   function populateLinks(val) {
     $('#url').val('https://' + challengeSection[val].defaultPrj + domainSuffix);
+    $('#projLink').attr("href", 'https://' + challengeSection[val].defaultPrj + domainSuffix);
     $('#testResults').addClass('hidden');
     var keys = Object.keys(APITests[val]);
     var ul = $('#links');
