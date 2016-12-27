@@ -42,7 +42,15 @@ var challengeSection = [
   {
     name : 'ISQA_1 - Personal Library',
     defaultPrj: 'spark-cathedral'
-  }
+  },
+  {
+    name : 'ISQA_2 - Metric/Imp Converter', 
+    defaultPrj: 'hard-twilight'
+  },
+  {
+    name : 'ISQA_3 - Anon Message/Image Board', 
+    defaultPrj: '??????'
+  },
 ];
 
 
@@ -236,12 +244,11 @@ var APITests = [
     //info/sample:  https://spark-cathedral.gomix.me/
     //code:         https://gomix.com/#!/project/spark-cathedral
     //
+    //owner:        Joe
+    //
     //note:   potentially last project as it's fairly complex and encompassing, unless we create a token request api
     //        window.ISQA_1_testBookId created so we can store variable across tests using global scope. (Needed to reliably predict api return)
     //
-    //todo:   impli mocha/tests on project
-    //        test for those tests in this test testing enviroment
-    //assert.equal(data.headers['cache-control'], 'no-store, no-cache, must-revalidate, proxy-revalidate');
     "I will not have anything cached in my client": `{
       getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
       .then(data => {
@@ -347,7 +354,7 @@ var APITests = [
         assert.equal(data.state, 'passed', 'Functional test should pass');
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
-    "Functional test 3 (/api/books => array of books)" : `{
+    "Functional test 3 (GET /api/books => array of books)" : `{
       getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=2')
       .then(data => {
         var testedFor = [];
@@ -374,7 +381,7 @@ var APITests = [
         assert.equal(data.state, 'passed', 'Functional test should pass');
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
-    "Functional test 5 (Test GET /api/books/[id] with valid/known id)" : `{
+    "Functional test 5 (GET /api/books/[id] with valid/known id)" : `{
       getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional&n=4')
       .then(data => {
         var testedFor = [];
@@ -408,8 +415,216 @@ var APITests = [
         assert.equal(data.state, 'passed', 'Functional test should pass');
       }, xhr => { throw new Error(xhr.statusText); })
     }`, 
-
-  }
+  },
+  {
+    //
+    //--------[ISQA_2 - Metric/Imp converter]---------
+    //
+    //info/sample:  https://hard-twilight.gomix.me/
+    //code:         https://gomix.com/#!/project/hard-twilight
+    //
+    //owner:        Joe
+    //
+    "I will help prevent the client from trying to guess(sniff) the MIME type." : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
+      .then(data => {
+        assert.equal(data.headers['x-content-type-options'], 'nosniff');
+      }, xhr => { throw new Error(xhr.statusText); })    
+    }`,
+    "I will prevent cross-site scripting (XSS) attacks." : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
+      .then(data => {
+        assert.equal(data.headers['x-xss-protection'], '1; mode=block');
+      }, xhr => { throw new Error(xhr.statusText); })     
+    }`,
+    "I can <b>GET</b> <code>/api/convert</code> with a single query containing a number and an accepted unit and have it converted." : `{
+      var testQuery = '5gal';
+      var expectedInput = ['5','gal'];
+      getUserInput => $.get(getUserInput('url') + '/api/convert',
+      {input: testQuery} )
+      .then(data => { 
+        assert.property(data, 'initNum', 'returned object should contain the initNum');
+        assert.equal(data.initNum, expectedInput[0], 'returned object initNum should have the correct number that was passed in');
+        assert.property(data, 'initUnit', 'returned object should contain initUnit');
+        assert.equal(data.initUnit, expectedInput[1], 'returned object initUnit should have the correct unit that was passed in');
+      }, xhr => {throw new Error(xhr.statusText); })      
+    }`,
+    "My return will consist of the initNum, initUnit, returnNum, returnUnit, and string spelling out units in format <code>{initNum} {initial_Units} converts to {returnNum} {return_Units}</code> with the result rounded to 5 decimals." : `{
+      var testQuery = '5gal';
+      var expected = '5 gallons converts to 18.92705 liters';
+      getUserInput => $.get(getUserInput('url') + '/api/convert',
+      {input: testQuery} )
+      .then(data => { 
+        assert.property(data, 'initNum', 'returned object should contain the initNum');
+        assert.property(data, 'initUnit', 'returned object should contain initUnit');
+        assert.property(data, 'returnNum', 'returned object should contain the returnNum');
+        assert.property(data, 'returnUnit', 'returned object should contain returnUnit');
+        assert.property(data, 'string', 'returned object should contain string');
+        assert.equal(data.string, expected, 'returned object.string should be formatted correctly');
+      }, xhr => {throw new Error(xhr.statusText); })     
+    }`,
+    "I can convert 'gal' to 'L' and vice versa [with a decimal]. <b>(1 gal to 3.78541 L)</b>" : `{
+      var testQuery = '18.92705L';
+      var expectedInput = ['18.92705','L','5','gal'];
+      getUserInput => $.get(getUserInput('url') + '/api/convert',
+      {input: testQuery} )
+      .then(data => { 
+        assert.property(data, 'initNum', 'returned object should contain the initNum');
+        assert.equal(data.initNum, expectedInput[0], 'returned object initNum should have the correct number that was passed in');
+        assert.property(data, 'initUnit', 'returned object should contain initUnit');
+        assert.equal(data.initUnit, expectedInput[1], 'returned object initUnit should have the correct unit that was passed in');
+        assert.property(data, 'returnNum', 'returned object should contain the returnNum');
+        assert.approximately(data.returnNum, 5, 0.1);
+        assert.property(data, 'returnUnit', 'returned object should contain returnUnit');
+        assert.equal(data.returnUnit, expectedInput[3]);
+      }, xhr => {throw new Error(xhr.statusText); })   
+    }`,
+    "I can convert 'lbs' to 'kg' and vice versa [with a fraction and decimal]. <b>(1 lbs to 0.453592 kg)</b>" : `{
+      var testQuery = '5.5/2kg';
+      var expectedInput = ['2.75','kg','6.06272','lbs'];
+      getUserInput => $.get(getUserInput('url') + '/api/convert',
+      {input: testQuery} )
+      .then(data => { 
+        assert.property(data, 'initNum', 'returned object should contain the initNum');
+        assert.equal(data.initNum, expectedInput[0], 'returned object initNum should have the correct number that was passed in');
+        assert.property(data, 'initUnit', 'returned object should contain initUnit');
+        assert.equal(data.initUnit, expectedInput[1], 'returned object initUnit should have the correct unit that was passed in');
+        assert.property(data, 'returnNum', 'returned object should contain the returnNum');
+        assert.approximately(data.returnNum, 6.06272, 0.1);
+        assert.property(data, 'returnUnit', 'returned object should contain returnUnit');
+        assert.equal(data.returnUnit, expectedInput[3]);
+      }, xhr => {throw new Error(xhr.statusText); })   
+    }`,
+    "I can convert 'mi' to 'km' and vice versa [with no number]. <b>(1 mi to 1.60934 km)</b>" : `{
+      var testQuery = 'mi';
+      var expectedInput = ['1','mi','1.60934','km'];
+      getUserInput => $.get(getUserInput('url') + '/api/convert',
+      {input: testQuery} )
+      .then(data => { 
+        assert.property(data, 'initNum', 'returned object should contain the initNum');
+        assert.equal(data.initNum, expectedInput[0], 'returned object initNum should have the correct number that was passed in');
+        assert.property(data, 'initUnit', 'returned object should contain initUnit');
+        assert.equal(data.initUnit, expectedInput[1], 'returned object initUnit should have the correct unit that was passed in');
+        assert.property(data, 'returnNum', 'returned object should contain the returnNum');
+        assert.approximately(data.returnNum, 1.60934, 0.1);
+        assert.property(data, 'returnUnit', 'returned object should contain returnUnit');
+        assert.equal(data.returnUnit, expectedInput[3]);
+      }, xhr => {throw new Error(xhr.statusText); })   
+    }`,
+    "If my unit of measurement is invalid, returned will be 'invalid unit'." : `{
+      getUserInput => $.get(getUserInput('url')+ '/api/convert',
+      {input: '5megaton'} )
+      .then(data => { 
+        assert.equal(data, 'invalid unit', 'Returned message should say "invalid unit"');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "If my number is invalid, returned with will 'invalid number'." : `{
+      getUserInput => $.get(getUserInput('url')+ '/api/convert',
+      {input: '5.5/4/3mi'} )
+      .then(data => { 
+        assert.equal(data, 'invalid number', 'Returned message should say "invalid number"');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "If both are invalid, return will be 'invalid number and unit'." : `{
+      getUserInput => $.get(getUserInput('url')+ '/api/convert',
+      {input: '5.5/4/3megaton'} )
+      .then(data => { 
+        assert.equal(data, 'invalid number and unit', 'Returned message should say "invalid number and unit"');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Unit Tests(6): Function convertHandler.getNum(input)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=unit')
+      .then(data => {
+        for (var i=0; i<6; i++) {
+          assert.equal(data[i].assertions[0].method, 'equal', 'Should test result of function to equal something, Problem with test #' & i+1);
+          assert.equal(data[i].state, 'passed', 'Unit test should pass');
+        }
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Unit Tests(2): Function convertHandler.getUnit(input)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=unit')
+      .then(data => {
+        for (var i=6; i<8; i++) {
+          assert.equal(data[i].assertions[0].method, 'equal', 'Should test result of function to equal something, Problem with test #' & i+1);
+          assert.equal(data[i].state, 'passed', 'Unit test should pass');
+        }
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Unit Tests(1): Function convertHandler.getReturnUnit(initUnit)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=unit')
+      .then(data => {
+        for (var i=8; i<9; i++) {
+          assert.equal(data[i].assertions[0].method, 'equal', 'Should test result of function to equal something, Problem with test #' & i+1);
+          assert.equal(data[i].state, 'passed', 'Unit test should pass');
+        }
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Unit Tests(1): Function convertHandler.spellOutUnit(unit)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=unit')
+      .then(data => {
+        for (var i=9; i<10; i++) {
+          assert.equal(data[i].assertions[0].method, 'equal', 'Should test result of function to equal something, Problem with test #' & i+1);
+          assert.equal(data[i].state, 'passed', 'Unit test should pass');
+        }
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Unit Tests(6): Function convertHandler.convert(num, unit)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=unit')
+      .then(data => {
+        for (var i=10; i<16; i++) {
+          assert.equal(data[i].assertions[0].method, 'approximately', 'Should test result of function to be approximately something, Problem with test #' & i+1);
+          assert.equal(data[i].state, 'passed', 'Unit test should pass');
+        }
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "Function Tests(5): GET /api/convert => conversion object" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional')
+      .then(data => {
+        var testedFor = [];
+        for (var x=0; x<data.length; x++) {
+          var tempArr = [];
+          for (var i=0; i<data[x].assertions.length; i++) {
+            tempArr.push(data[x].assertions[i].args[0]);
+          }
+          testedFor.push(tempArr);
+        }
+        assert.include(testedFor[0],'res.status','Test 1 should test res.status');
+        assert.include(testedFor[0],'res.body.initNum','Test 1 should test input number');
+        assert.include(testedFor[0],'res.body.initUnit','Test 1 should test input unit');
+        assert.include(testedFor[0],'res.body.returnNum','Test 1 should test return number');
+        assert.include(testedFor[0],'res.body.returnUnit','Test 1 should test return unit');
+        assert.equal(data[0].state, 'passed', 'Test 1 should pass');
+        for (var y=1; y<4; y++) {
+          assert.include(testedFor[y],'res.status','Test '& y+1 &' should test res.status');
+          assert.include(testedFor[y],'res.text','Test '& y+1 &' should test res.text');
+          assert.equal(data[y].state, 'passed', 'Test '& y+1 &' should pass');
+        }
+        assert.include(testedFor[4],'res.status','Test 4 should test res.status');
+        assert.include(testedFor[4],'res.body.initNum','Test 4 should test input number');
+        assert.include(testedFor[4],'res.body.initUnit','Test 4 should test input unit');
+        assert.include(testedFor[4],'res.body.returnNum','Test 4 should test return number');
+        assert.include(testedFor[4],'res.body.returnUnit','Test 4 should test return unit');
+        assert.equal(data[4].state, 'passed', 'Test 4 should pass');
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`,
+    
+  },
+  {
+    //
+    //--------[ISQA_3 - Anon Message/Image Board]---------
+    //
+    //info/sample:  
+    //code:         
+    //
+    //owner:        Joe
+    //
+    "Test" : `{
+      getUserInput => $.get(getUserInput('url')+ '/api/convert')
+      .then(data => {
+        assert.true;
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`,
+  },
   
   
 ];
