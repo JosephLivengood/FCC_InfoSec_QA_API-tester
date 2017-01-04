@@ -48,8 +48,8 @@ var challengeSection = [
     defaultPrj: 'hard-twilight'
   },
   {
-    name : 'ISQA_3 - Anon Message/Image Board', 
-    defaultPrj: '??????'
+    name : 'ISQA_3 - Anon Message Board', 
+    defaultPrj: 'horn-celery'
   },
 ];
 
@@ -246,8 +246,7 @@ var APITests = [
     //
     //owner:        Joe
     //
-    //note:   potentially last project as it's fairly complex and encompassing, unless we create a token request api
-    //        window.ISQA_1_testBookId created so we can store variable across tests using global scope. (Needed to reliably predict api return)
+    //note:   window.ISQA_1_testBookId created so we can store variable across tests using global scope. (Needed to reliably predict api return)
     //
     "I will not have anything cached in my client": `{
       getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
@@ -613,18 +612,160 @@ var APITests = [
     //
     //--------[ISQA_3 - Anon Message/Image Board]---------
     //
-    //info/sample:  
-    //code:         
+    //info/sample:  https://horn-celery.gomix.me/
+    //code:         https://gomix.com/#!/project/horn-celery
     //
     //owner:        Joe
     //
-    "Test" : `{
-      getUserInput => $.get(getUserInput('url')+ '/api/convert')
+    //notes:    window.ISQA_3_testId & window.ISQA_3_testReplyId
+    //
+    "Only allow your site to be loading in an iFrame on your own pages." : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
       .then(data => {
-        assert.true;
+        assert.equal(data.headers['x-frame-options'], 'SAMEORIGIN');
+      }, xhr => { throw new Error(xhr.statusText); })    
+    }`,
+    "Do not allow DNS prefetching." : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
+      .then(data => {
+        assert.equal(data.headers['x-dns-prefetch-control'], 'off');
+      }, xhr => { throw new Error(xhr.statusText); })     
+    }`,
+    "Only allow your site to send the referrer for your own pages." : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
+      .then(data => {
+        assert.equal(data.headers['referrer-policy'], 'same-origin');
+      }, xhr => { throw new Error(xhr.statusText); })     
+    }`,
+    "I can <b>POST</b> a thread to a specific message board by passing form data <code>text</code> and <code>delete_password</code> to <i>/api/threads/{board}</i>.": `{
+      var testText = 'fcc testing thread';
+      getUserInput => $.post(getUserInput('url') + '/api/threads/fcc',
+      {text: testText, delete_password: 'pass'} )
+      .then(data => { 
+        assert.isDefined(data);
+      }, xhr => {throw new Error(xhr.statusText); })
+    }`,
+    "I can <b>GET</b> an array of the most recent 10 bumped threads on the board with only the most recent 3 replies from <i>/api/threads/{board}</i>.": `{
+      getUserInput => $.get(getUserInput('url')+ '/api/threads/fcc')
+      .then(data => { 
+        assert.isArray(data, 'Return should be an array');
+        assert.property(data[0], 'text');
+        assert.property(data[0], 'created_on');
+        assert.property(data[0], '_id');
+        assert.property(data[0], 'bumped_on');
+        assert.notProperty(data[0], 'delete_password');
+        assert.notProperty(data[0], 'reported');
+        assert.isArray(data[0].replies);
+        assert.isBelow(data[0].replies.length, 4, 'max replies sent should be 3');
+        window.ISQA_3_testId = data[0]._id;
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "I can <b>POST</b> a reply to a thread on a specific message board by passing form data <code>text</code>, <code>thread_id</code>, and <code>delete_password</code> to <i>/api/threads/{board}</i>.": `{
+      var testText = 'fcc testing reply';
+      getUserInput => $.post(getUserInput('url') + '/api/replies/fcc',
+      {text: testText, delete_password: 'pass', thread_id: window.ISQA_3_testId} )
+      .then(data => { 
+        assert.isDefined(data);
+      }, xhr => {throw new Error(xhr.statusText); })
+    }`,
+    "I can <b>GET</b> an entire thread with all it's replies from <i>/api/replies/{board}?thread_id={thread_id}</i>.": `{
+      getUserInput => $.get(getUserInput('url')+ '/api/replies/fcc?thread_id='+window.ISQA_3_testId)
+      .then(data => { 
+        assert.property(data, 'text');
+        assert.property(data, 'created_on');
+        assert.property(data, '_id');
+        assert.property(data, 'bumped_on');
+        assert.notProperty(data, 'delete_password');
+        assert.notProperty(data, 'reported');
+        assert.isArray(data.replies);
+        assert.property(data.replies[0], 'text');
+        assert.property(data.replies[0], 'created_on');
+        assert.property(data.replies[0], '_id');
+        assert.notProperty(data.replies[0], 'delete_password');
+        assert.notProperty(data.replies[0], 'reported');
+        assert.equal(data.replies[0].text, 'fcc testing reply', 'Our reply from last test should be here.');
+        window.ISQA_3_testReplyId = data.replies[0]._id;
       }, xhr => { throw new Error(xhr.statusText); })      
     }`,
+    "I can report a reply by sending a <b>PUT</b> request to <i>/api/replies/{board}</i> with the <code>reply_id</code> and <code>thread_id</code>.": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/replies/fcc', data: {"thread_id": window.ISQA_3_testId, "reply_id": window.ISQA_3_testReplyId}, type: 'PUT'})
+      .then(data => { 
+        assert.equal(data, 'reported');
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`,
+    "If I try to delete a reply with a bad password it will return 'incorrect password'.": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/replies/fcc', data: {"thread_id": window.ISQA_3_testId, "reply_id": window.ISQA_3_testReplyId, "delete_password":"wrongpass"}, type: 'DELETE'})
+      .then(data => { 
+        assert.equal(data, 'incorrect password');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "If I try to delete a reply with a good password it will return 'success'.": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/replies/fcc', data: {"thread_id": window.ISQA_3_testId, "reply_id": window.ISQA_3_testReplyId, "delete_password":"pass"}, type: 'DELETE'})
+      .then(data => { 
+        assert.equal(data, 'success');
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`,
+    "The delete reply will now show as '[deleted]'": `{
+      getUserInput => $.get(getUserInput('url')+ '/api/replies/fcc?thread_id='+window.ISQA_3_testId)
+      .then(data => { 
+        assert.equal(data.replies[0].text, '[deleted]');
+      }, xhr => { throw new Error(xhr.statusText); })   
+    }`,
+    "I can report a thread by sending a <b>PUT</b> request to <i>/api/threads/{board}</i> with the <code>thread_id</code>.": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/threads/fcc', data: {"thread_id": window.ISQA_3_testId}, type: 'PUT'})
+      .then(data => { 
+        assert.equal(data, 'reported');
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`,
+    "If I try to delete a thread with a bad password it will return 'incorrect password'.": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/threads/fcc', data: {"thread_id": window.ISQA_3_testId, "delete_password":"wrongpass"}, type: 'DELETE'})
+      .then(data => { 
+        assert.equal(data, 'incorrect password');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "If I try to delete a thread with a good password it will return 'success'.": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/api/threads/fcc', data: {"thread_id": window.ISQA_3_testId, "delete_password":"pass"}, type: 'DELETE'})
+      .then(data => { 
+        assert.equal(data, 'success');
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`,
+    "The delete thread will not be gone.": `{
+      getUserInput => $.get(getUserInput('url')+ '/api/threads/fcc')
+      .then(data => { 
+        var deleted = true;
+        data.forEach(function(ele){
+          if (ele._id == window.ISQA_3_testId) {
+            deleted = false;
+          }
+        });
+        assert.equal(deleted, true);
+      }, xhr => { throw new Error(xhr.statusText); })   
+    }`,
+    "Functional Tests" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional')
+      .then(data => {
+        var testedFor = [];
+        for (var x=0; x<data.length; x++) {
+          var tempArr = [];
+          for (var i=0; i<data[x].assertions.length; i++) {
+            var y = data[x].assertions[i].args[1];
+            if(typeof y === 'string') {
+              y = y.replace(/['"]+/g, '');
+            }
+            testedFor.push(y);
+            tempArr.push(data[x].assertions[i].args[0]);
+          }
+          assert.include(tempArr, 'res.status','Test '+x+' should test for res.status');
+          assert.equal(data[x].state,'passed','Test '+x+' should be pass');
+        }
+        console.log(testedFor);
+        var thingsThatShouldBeTested = ['_id','text','created_on','reported','bumped_on','replies','delete_password','incorrect password','success','reported']
+        thingsThatShouldBeTested.forEach(function(ele){
+          assert.include(testedFor,ele,'Should be testing for '+ele+' in one or more functional tests');
+        });
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`,    
+    
   },
-  
   
 ];
