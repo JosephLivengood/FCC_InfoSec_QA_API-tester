@@ -97,3 +97,24 @@ Status: **PROTOTYPE IN PROGRESS**
 
 
 ----------
+
+
+
+**ISQA_5 - Stock Price Checker**
+
+Prototype: []()
+
+Boilerplate: []()
+
+User-stories: []()
+
+    Relative Complexity: 1/5
+    Loosely graded tests only functional required
+    1 routes with 1 handler req
+    Uses MongoDB
+    [sec reqs]
+
+	Project Owner: Joe
+Status: **PROTOTYPE IN PROGRESS**
+
+

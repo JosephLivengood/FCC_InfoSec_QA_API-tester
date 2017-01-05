@@ -51,6 +51,10 @@ var challengeSection = [
     name : 'ISQA_3 - Anon Message Board', 
     defaultPrj: 'horn-celery'
   },
+  {
+    name : 'ISQA_5 - Nasdaq Stock Prices',
+    defaultPrj: 'giant-chronometer'
+  }
 ];
 
 
@@ -765,6 +769,106 @@ var APITests = [
         });
       }, xhr => { throw new Error(xhr.statusText); })      
     }`,    
+  },
+  {
+    //
+    //--------[ISQA_5 - Nasdaq Stock Prices]---------
+    //
+    //info/sample:  https://giant-chronometer.gomix.me/
+    //code:         https://gomix.com/#!/project/giant-chronometer
+    //
+    //owner:        Joe
+    //
+    //notes:    window.ISQA_5_likes
+    //
+    "Set the content security policies to only allow loading of scripts and css from your server." : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/app-info')
+      .then(data => {
+        assert.equal(data.headers['content-security-policy'], "default-src 'self'; style-src 'self'");
+      }, xhr => { throw new Error(xhr.statusText); })    
+    }`,
+    "I can GET /api/stock-prices with 1 stock and be returned the object as defined in user stories." : `{
+      getUserInput => $.get(getUserInput('url') + '/api/stock-prices',
+      {stock: 'goog'} )
+      .then(data => { 
+        assert.isDefined(data.stockData);
+        assert.property(data.stockData, 'stock');
+        assert.property(data.stockData, 'price');
+        assert.property(data.stockData, 'likes');
+        assert.equal(data.stockData.stock, 'GOOG');
+      }, xhr => {throw new Error(xhr.statusText); })         
+    }`,
+    "I can GET /api/stock-prices with 1 stock and like it." : `{
+      getUserInput => $.get(getUserInput('url') + '/api/stock-prices',
+      {stock: 'msft', like: true} )
+      .then(data => { 
+        assert.isDefined(data.stockData);
+        assert.property(data.stockData, 'stock');
+        assert.property(data.stockData, 'price');
+        assert.property(data.stockData, 'likes');
+        assert.equal(data.stockData.stock, 'MSFT');
+        assert.isAbove(data.stockData.likes, 0);
+        window.ISQA_5_likes = data.stockData.likes;
+      }, xhr => {throw new Error(xhr.statusText); })  
+    }`,
+    "It will only count 1 like per IP." : `{
+      getUserInput => $.get(getUserInput('url') + '/api/stock-prices',
+      {stock: 'msft', like: true} )
+      .then(data => { 
+        assert.isDefined(data.stockData);
+        assert.property(data.stockData, 'stock');
+        assert.property(data.stockData, 'price');
+        assert.property(data.stockData, 'likes');
+        assert.equal(data.stockData.stock, 'MSFT');
+        assert.equal(window.ISQA_5_likes, data.stockData.likes, 'We should not have multiple votes count for our IP.');
+      }, xhr => {throw new Error(xhr.statusText); })        
+    }`,
+    "I can GET /api/stock-prices with 2 stock and be returned the object as defined in user stories." : `{
+      getUserInput => $.get(getUserInput('url') + '/api/stock-prices',
+      {stock: ['goog','msft'], like: true} )
+      .then(data => { 
+        assert.isArray(data.stockData);
+        assert.property(data.stockData[0], 'stock');
+        assert.property(data.stockData[0], 'price');
+        assert.property(data.stockData[0], 'rel_likes');
+        assert.property(data.stockData[1], 'stock');
+        assert.property(data.stockData[1], 'price');
+        assert.property(data.stockData[1], 'rel_likes');
+        assert.oneOf(data.stockData[0].stock, ['GOOG','MSFT']);
+        assert.oneOf(data.stockData[1].stock, ['GOOG','MSFT']);
+        assert.notEqual(data.stockData[0].price,data.stockData[1].price);
+        assert.notEqual(data.stockData[0].stock,data.stockData[1].stock);
+        assert.equal(data.stockData[0].rel_likes + data.stockData[1].rel_likes, 0);
+      }, xhr => {throw new Error(xhr.statusText); })         
+    }`,    
+    "Functional Tests(5)" : `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/get-tests?type=functional')
+      .then(data => {
+        var testedFor = [];
+        var propertyTestsArr = [];
+        for (var x=0; x<data.length; x++) {
+          var tempArr = [];
+          var propertyTests = 0;
+          for (var i=0; i<data[x].assertions.length; i++) {
+            tempArr.push(data[x].assertions[i].args[0]);
+            if(data.assertions[i].method == 'property') propertyTests++;
+          }
+          assert.include(tempArr, 'res.status','Test '+x+' should test for res.status.');
+          assert.equal(data[x].state,'passed','Test '+x+' should be pass.');
+          testedFor.push(tempArr);
+          propetyTestsArr.push(propertyTests);
+        }
+        for(var y=0; y < 3; y++) {
+          assert.isAbove(propertyTests[y], 2, 'Test '+y+' should have at least 3 property tests to test response body.');
+          assert.include(testedFor, 'res.body.stockData.stock', 'Test '+y+' should test the stock returned to be the one sent.')
+        };
+        for(var y=3; y < 5; y++) {
+          assert.isAbove(propertyTests[y], 5, 'Test '+y+' should have at least 6 property tests to test response body for properties of BOTH stocks in array.');
+          assert.include(testedFor, 'res.body.stockData.stock[0]', 'Test '+y+' should test both stocks returned to be the one of the ones sent.')
+          assert.include(testedFor, 'res.body.stockData.stock[1]', 'Test '+y+' should test both stocks returned to be the one of the ones sent.')
+        };
+      }, xhr => { throw new Error(xhr.statusText); })      
+    }`, 
     
   },
   
