@@ -84,16 +84,16 @@ Status: **Ready for Approval/QA**
 
 ----------
 
-**ISQA_4 - Voting App**
-Prototype:
+**ISQA_4 - Issue Tracker**
+Prototype: [protective-garage](https://gomix.com/#!/project/protective-garage)
 
-Boilerplate:
+Boilerplate: [fcc-issue](https://gomix.com/#!/project/fcc-issue)
 
-User-stories:
+User-stories: [index](https://protective-garage.gomix.me/)
 
-Project Owner: Luke
+Project Owner: Joe
 
-Status: **PROTOTYPE IN PROGRESS**
+Status: **TESTS/BP IN PROGRESS**
 
 
 ----------
@@ -102,19 +102,19 @@ Status: **PROTOTYPE IN PROGRESS**
 
 **ISQA_5 - Stock Price Checker**
 
-Prototype: []()
+Prototype: [giant-chronometer](https://gomix.com/#!/project/giant-chronometer)
 
-Boilerplate: []()
+Boilerplate: [fcc-stock](https://gomix.com/#!/project/fcc-stock)
 
-User-stories: []()
+User-stories: [index](giant-chronometer.gomix.me)
 
-    Relative Complexity: 1/5
-    Loosely graded tests only functional required
-    1 routes with 1 handler req
+    Relative Complexity: 3/5
+    Only functional required
+    1 routes handler optional
     Uses MongoDB
-    [sec reqs]
+    CSP sec req
 
 	Project Owner: Joe
-Status: **PROTOTYPE IN PROGRESS**
+Status: **Ready for Approval/QA**
 
 
