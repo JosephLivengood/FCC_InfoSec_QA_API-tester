@@ -35,7 +35,20 @@ var challengeSection = [
   },{
     name : 'MS5 - file metadata',
     defaultPrj: 'purple-paladin'
-  },*/{
+  },*/
+  {
+    name : 'Advanced Node Socket',
+    defaultPrj: 'buttercup-delete'
+  },
+  {
+    name : 'Advanced Node Social',
+    defaultPrj: 'guttural-birch'
+  },
+  {
+    name : 'Advanced Node Passport',
+    defaultPrj: 'delicious-herring'
+  },
+  {
     name : 'MS6 - Exercise Tracker',
     defaultPrj: 'fuschia-custard'
   },
@@ -63,6 +76,342 @@ var challengeSection = [
 
 
 var APITests = [
+  {
+    "1 - strat": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /io.*=.*require.*('|\")socket.io('|\").*http/gi, 'You should correctly require and instanciate socket.io as io.');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,   
+    "1 - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /io.on.*('|\")connection('|\").*socket/gi, 'io should listen for \"connection\" and socket should be the 2nd arguments variable');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "1 - cli": `{
+      getUserInput => $.get(getUserInput('url')+ '/public/client.js')
+      .then(data => {
+        assert.match(data, /socket.*=.*io/gi, 'Your client should be connection to server with the connection defined as socket');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    "2 - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /io.emit.*('|\")user count('|\").*currentUsers/gi, 'You should emit \"user count\" with data currentUsers');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "2 - cli": `{
+      getUserInput => $.get(getUserInput('url')+ '/public/client.js')
+      .then(data => {
+        assert.match(data, /socket.*=.*io/gi, 'Your client should be listening for the \"user count\" event');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    "3 - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /io.use.*passportSocketIo.authorize/gi, 'You should have told io to use passportSockIo.authorize with the correct options');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+    
+    
+  },
+  {
+    "1 - routes": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /('|")\\/auth\\/github('|")[^]*get.*passport.authenticate.*github/gi, 'Route auth/github should only call passport.authenticate with github');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "1 - routes 2": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /('|\")\\/auth\\/github\\/callback('|\")[^]*get.*passport.authenticate.*github.*failureRedirect:( |)(\"|')\\/(\"|')/gi, 'Route auth/github/callback should accept a get request and call passport.authenticate for github with a failure redirect to home');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    "2 - dep": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/package.json')
+      .then(data => {
+        var packJson = JSON.parse(data);
+        assert.property(packJson.dependencies, 'passport-github', 'Your project should list \"passport-github\" as a dependency');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "2 - req": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /require.*(\"|')passport-github(\"|')/gi, 'You should have required passport-github');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "2 - strat": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /passport.use.*new GitHubStrategy/gi, 'Passport should use a new GitHubStrategy');
+        assert.match(data, /callbackURL:( |)(\"|').*(\"|')/gi, 'You should have a callbackURL');
+        assert.match(data, /process.env.GITHUB_CLIENT_SECRET/g, 'You should use process.env.GITHUB_CLIENT_SECRET');
+        assert.match(data, /process.env.GITHUB_CLIENT_ID/g, 'You should use process.env.GITHUB_CLIENT_ID');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    
+    "3 - strat": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /passport.use.*new GitHubStrategy/gi, 'Passport should use a new GitHubStrategy');
+        assert.match(data, /callbackURL:( |)(\"|').*(\"|')/gi, 'You should have a callbackURL');
+        assert.match(data, /process.env.GITHUB_CLIENT_SECRET/g, 'You should use process.env.GITHUB_CLIENT_SECRET');
+        assert.match(data, /process.env.GITHUB_CLIENT_ID/g, 'You should use process.env.GITHUB_CLIENT_ID');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    "4 - strat": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /GitHubStrategy[^]*db.collection/gi, 'Strategy should use now use the database to search for the user');
+        assert.match(data, /GitHubStrategy[^]*socialusers/gi, 'Strategy should use \"socialusers\" as db collection');
+        assert.match(data, /GitHubStrategy[^]*return cb/gi, 'Strategy should return the callback function \"cb\"');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    
+  },
+  {
+    "STE - dep": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/package.json')
+      .then(data => {
+        var packJson = JSON.parse(data);
+        assert.property(packJson.dependencies, 'pug', 'Your project should list \"pug\" as a dependency');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "STE - app.use('view-engine', 'pug')": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /('|\")view engine('|\"),( |)('|\")pug('|\")/gi, 'Your project should set Pug as a view engine');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "STE - Check public": `{
+      getUserInput => $.get(getUserInput('url')+ '/')
+      .then(data => {
+        assert.match(data, /pug-success-message/gi, 'Your projects home page should now be rendered by pug with the projects .pug file unaltered');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+    "UTEP - var": `{
+      getUserInput => $.get(getUserInput('url')+ '/')
+      .then(data => {
+        assert.match(data, /pug-variable(\"|')>Please login/gi, 'Your projects home page should now be rendered by pug with the projects .pug file unaltered');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+    "SUP - dep": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/package.json')
+      .then(data => {
+        var packJson = JSON.parse(data);
+        assert.property(packJson.dependencies, 'passport', 'Your project should list \"passport\" as a dependency');
+        assert.property(packJson.dependencies, 'express-session', 'Your project should list \"express-session\" as a dependency');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "SUP - req": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /require.*(\"|')passport(\"|')/gi, 'You should have required passport');
+        assert.match(data, /require.*(\"|')express-session(\"|')/gi, 'You should have required express-session');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "SUP - app.use p": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /passport.initialize/gi, 'Your express app should use \"passport.initialize()\"');
+        assert.match(data, /passport.session/gi, 'Your express app should use \"passport.session()\"');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "SUP - session setup": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /secret:( |)process.env.SESSION_SECRET/gi, 'Your express app should have express-session set up with your secret as process.env.SESSION_SECRET');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    "SUO - serial": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /passport.serializeUser/gi, 'You should have created your passport.serializeUser function');
+        assert.match(data, /null, user._id/gi, 'There should be a callback in your serializeUser with (null, user._id)');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "SUO - deserial": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /passport.deserializeUser/gi, 'You should have created your passport.deserializeUser function');
+        assert.match(data, /null,( |)null/gi, 'There should be a callback in your deserializeUser with (null, null) for now');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "SUO - objectid": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /require\([^\)](\"|')mongodb(\"|')\)/gi, 'You should have required mongodb');
+        assert.match(data, /new ObjectID\([^\)]id\)/gi, 'Even though the block is commented out, you should use new ObjectID(id) for when we add the database');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+
+    
+    "ISPU - req": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /mongo.connect/gi, 'You should have created a connection to your database');
+        assert.match(data, /mongo.connect[^]*app.listen[^]*}[^]*}[^]*\([^\)]*\)/gi, 'You should have your app.listen nested at within your database connection at the bottom');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "ISPU - deser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.notMatch(data, /null,( |)null/gi, 'The callback in deserializeUser of (null, null) should be completely removed for the db block uncommented out');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+    
+    
+    "AS - dep": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/package.json')
+      .then(data => {
+        var packJson = JSON.parse(data);
+        assert.property(packJson.dependencies, 'passport-local', 'Your project should list \"passport-local \" as a dependency');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "AS - req": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /require\([^\)](\"|')passport-local(\"|')\)/gi, 'You should have required passport-local');
+        assert.match(data, /new LocalStrategy/gi, 'You should have told passport to use a new strategy');
+        assert.match(data, /findOne/gi, 'Your new local strategy should use the findOne query to find a username based on the inputs');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    "UPS - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /showLogin:( |)true/gi, 'You should be passing the variable \"showLogin\" as true to your render function for the homepage');
+        assert.match(data, /failureRedirect:( |)('|\")\\/('|\")/gi, 'Your code should include a failureRedirect to the \"/\" route');
+        assert.match(data, /login[^]*post[^]*local/gi, 'You should have a route for login which accepts a POST and passport.authenticates local');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "UPS - attempt log": `{
+      getUserInput => $.post(getUserInput('url')+ '/login')
+      .then(data => {
+        assert.match(data, /Home page/gi, 'A login attempt at this point should redirect to the homepage since we do not have any registered users');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    
+    "CNM - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /ensureAuthenticated[^]*req.isAuthenticated/gi, 'Your ensureAuthenticated middleware should be defined and utilize the req.isAuthenticated function');
+        assert.match(data, /profile[^]*get[^]*ensureAuthenticated/gi, 'Your ensureAuthenticated middleware should be defined and utilize the req.isAuthenticated function'); 
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    "CNM - attempt pro": `{
+      getUserInput => $.get(getUserInput('url')+ '/profile')
+      .then(data => {
+        assert.match(data, /Home page/gi, 'An attempt to go to the profile at this point should redirect to the homepage since we are not logged in');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    "PPT - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /\\/views\\/pug\\/profile[^]*username:( |)req.user.username/gi, 'You should be passing the variable username with req.user.username into the render function of the profile page');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+    
+    "LUO - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /req.logout/gi, 'You should be call req.logout() in youre /logout route');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "LUO - attempt logout": `{
+      getUserInput => $.get(getUserInput('url')+ '/logout')
+      .then(data => {
+        assert.match(data, /Home page/gi, 'When a user logs out they should be redirected to the homepage');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    
+    "RNU - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /showRegistration:( |)true/gi, 'You should be passing the variable \"showRegistration\" as true to your render function for the homepage');
+        assert.match(data, /register[^]*post[^]*findOne[^]*username:( |)req.body.username/gi, 'You should have a route accepted a post request on register that querys the db with findone and the query being \"username: req.body.username\"');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "RNU register": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/register',data: {username: 'freeCodeCampTester', password: 'freeCodeCampTester'},crossDomain: true, type: 'POST', xhrFields: { withCredentials: true }})
+      .then(data => {
+        assert.match(data, /Profile/gi, 'I should be able to register and it direct me to my profile. CLEAR YOUR DATABASE if this test fails (each time until its right!)');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "RNU login": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/login',data: {username: 'freeCodeCampTester', password: 'freeCodeCampTester'}, type: 'POST', xhrFields: { withCredentials: true }})
+      .then(data => {
+        assert.match(data, /Profile/gi, 'Login should work if previous test was done successfully and redirect successfully to the profile. Check your work and clear your DB');
+        assert.match(data, /freeCodeCampTester/gi, 'The profile should properly display the welcome to the user logged in');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "RNU logout": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/logout', type: 'GET', xhrFields: { withCredentials: true }})
+      .then(data => {
+        assert.match(data, /Home/gi, 'Logout should redirect to home');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "RNU nonauth pro": `{
+      getUserInput => $.ajax({url: getUserInput('url')+ '/profile', type: 'GET', crossDomain: true, xhrFields: { withCredentials: true }})
+      .then(data => {
+        assert.match(data, /Home/gi, 'Profile should redirect to home when we are logged out now again');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+    "ENDD": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /require\([^\)](\"|').\\/routes.js(\"|')\)/gi, 'You should have required passport-local');
+        assert.match(data, /routes/gi, 'You should be passing the variable \"showRegistration\" as true to your render function for the homepage');
+        }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+    "STE - d": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/package.json')
+      .then(data => {
+        var packJson = JSON.parse(data);
+        assert.property(packJson.dependencies, 'pug', 'Your project should list \"pug\" as a dependency');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    
+    
+  },
   /*{
     // npm - package.json - DONE
    // "test - valid sync assertion" : "assert('ok', 'test not working')",
