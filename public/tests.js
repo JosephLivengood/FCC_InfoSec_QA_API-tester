@@ -114,13 +114,43 @@ var APITests = [
     "3 - ser": `{
       getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
       .then(data => {
-        assert.match(data, /io.use.*passportSocketIo.authorize/gi, 'You should have told io to use passportSockIo.authorize with the correct options');
+        assert.match(data, /io.use.*passportSocketIo.authorize/gi, 'You should have told io to use passportSocketIo.authorize with the correct options');
       }, xhr => { throw new Error(xhr.statusText); })
     }`,
     
     
     
+    "4 - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /io.emit.*('|\")user('|\").*name.*currentUsers.*connected/gi, 'You should have an event emitted named user sending name, currentUsers, and connected');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "4 - cli": `{
+      getUserInput => $.get(getUserInput('url')+ '/public/client.js')
+      .then(data => {
+        assert.match(data, /socket.on.*('|\")user('|\")[^]*num-users/gi, 'You should change the text of #num-users within on your client within the \"user\" even listener to show the current users connected');
+        assert.match(data, /socket.on.*('|\")user('|\")[^]*messages.*li/gi, 'You should append a list item to #messages on your client within the \"user\" event listener to annouce a user came or went');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
     
+    
+    "5 - ser": `{
+      getUserInput => $.get(getUserInput('url')+ '/_api/server.js')
+      .then(data => {
+        assert.match(data, /socket.on.*('|\")chat message('|\")[^]*io.emit.*('|\")chat message('|\").*name.*message/gi, 'Your server should listen to the socket for \"chat message\" then emit to all users \"chat message\" with name and message in the data object');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`,
+    "5 - cli": `{
+      getUserInput => $.get(getUserInput('url')+ '/public/client.js')
+      .then(data => {
+        assert.match(data, /socket.on.*('|\")chat message('|\")[^]*messages.*li/gi, 'You should append a list item to #messages on your client within the \"chat message\" event listener to display the new message');
+      }, xhr => { throw new Error(xhr.statusText); })
+    }`, 
+    
+    
+    
+    // io.emit('user', {name: socket.request.user.name, currentUsers, connected: true});
   },
   {
     "1 - routes": `{
